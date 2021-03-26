@@ -28,7 +28,6 @@ import java.lang.Double;
 import java.lang.IllegalArgumentException;
 import java.lang.Override;
 import java.lang.String;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -46,11 +45,9 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
 
   private static final GenericType<Double> GENERIC_TYPE = new GenericType<Double>(){};
 
-  private static final GenericType<Instant> GENERIC_TYPE1 = new GenericType<Instant>(){};
+  private static final GenericType<String> GENERIC_TYPE1 = new GenericType<String>(){};
 
-  private static final GenericType<String> GENERIC_TYPE2 = new GenericType<String>(){};
-
-  private static final GenericType<LocalDate> GENERIC_TYPE3 = new GenericType<LocalDate>(){};
+  private static final GenericType<LocalDate> GENERIC_TYPE2 = new GenericType<LocalDate>(){};
 
   private final List<String> primaryKeys;
 
@@ -87,15 +84,11 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
     }
 
     if (entity.getDescription() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("description", entity.getDescription(), Double.class);
+      target = target.set("description", entity.getDescription(), String.class);
     }
 
     if (entity.getCreated() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
       target = target.set("created", entity.getCreated(), LocalDate.class);
-    }
-
-    if (entity.getLastWatch() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("last_watch", entity.getLastWatch(), Instant.class);
     }
 
     return target;
@@ -110,18 +103,15 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
 
     Double propertyValue2 = source.get("price", Double.class);
 
-    Double propertyValue3 = source.get("description", Double.class);
+    String propertyValue3 = source.get("description", String.class);
 
     LocalDate propertyValue4 = source.get("created", LocalDate.class);
-
-    Instant propertyValue5 = source.get("last_watch", Instant.class);
     return new ProductDto(
         propertyValue,
         propertyValue1,
         propertyValue2,
         propertyValue3,
-        propertyValue4,
-        propertyValue5);
+        propertyValue4);
   }
 
   @Override
@@ -135,8 +125,7 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
         .value("name", QueryBuilder.bindMarker("name"))
         .value("price", QueryBuilder.bindMarker("price"))
         .value("description", QueryBuilder.bindMarker("description"))
-        .value("created", QueryBuilder.bindMarker("created"))
-        .value("last_watch", QueryBuilder.bindMarker("last_watch"));
+        .value("created", QueryBuilder.bindMarker("created"));
   }
 
   public Select selectByPrimaryKeyParts(int parameterCount) {
@@ -164,8 +153,7 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
         .column("name")
         .column("price")
         .column("description")
-        .column("created")
-        .column("last_watch");
+        .column("created");
   }
 
   public DeleteSelection deleteStart() {
@@ -204,8 +192,7 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
         .setColumn("name", QueryBuilder.bindMarker("name"))
         .setColumn("price", QueryBuilder.bindMarker("price"))
         .setColumn("description", QueryBuilder.bindMarker("description"))
-        .setColumn("created", QueryBuilder.bindMarker("created"))
-        .setColumn("last_watch", QueryBuilder.bindMarker("last_watch")));
+        .setColumn("created", QueryBuilder.bindMarker("created")));
   }
 
   @Override
@@ -240,7 +227,6 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
     expectedCqlNames.add(CqlIdentifier.fromCql("price"));
     expectedCqlNames.add(CqlIdentifier.fromCql("description"));
     expectedCqlNames.add(CqlIdentifier.fromCql("created"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("last_watch"));
     Optional<TableMetadata> tableMetadata = keyspace.flatMap(v -> v.getTable(tableId));
     Optional<UserDefinedType> userDefinedType = keyspace.flatMap(v -> v.getUserDefinedType(tableId));
     if (tableMetadata.isPresent()) {
@@ -259,11 +245,10 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
       // validation of types
       Map<CqlIdentifier, GenericType<?>> expectedTypesPerColumn = new LinkedHashMap<>();
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("price"), GENERIC_TYPE);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("last_watch"), GENERIC_TYPE1);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("id"), GENERIC_TYPE2);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("created"), GENERIC_TYPE3);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("name"), GENERIC_TYPE2);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("description"), GENERIC_TYPE);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("id"), GENERIC_TYPE1);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("created"), GENERIC_TYPE2);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("name"), GENERIC_TYPE1);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("description"), GENERIC_TYPE1);
       List<String> missingTableTypes = findTypeMismatches(expectedTypesPerColumn, tableMetadata.get().getColumns(), context.getSession().getContext().getCodecRegistry());
       throwMissingTableTypesIfNotEmpty(missingTableTypes, keyspaceId, tableId, entityClassName);
     }
@@ -277,11 +262,10 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
       // validation of UDT types
       Map<CqlIdentifier, GenericType<?>> expectedTypesPerColumn = new LinkedHashMap<>();
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("price"), GENERIC_TYPE);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("last_watch"), GENERIC_TYPE1);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("id"), GENERIC_TYPE2);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("created"), GENERIC_TYPE3);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("name"), GENERIC_TYPE2);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("description"), GENERIC_TYPE);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("id"), GENERIC_TYPE1);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("created"), GENERIC_TYPE2);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("name"), GENERIC_TYPE1);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("description"), GENERIC_TYPE1);
       List<CqlIdentifier> expectedColumns = userDefinedType.get().getFieldNames();
       List<DataType> expectedTypes = userDefinedType.get().getFieldTypes();
       List<String> missingTableTypes = findTypeMismatches(expectedTypesPerColumn, expectedColumns, expectedTypes, context.getSession().getContext().getCodecRegistry());

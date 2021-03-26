@@ -1,9 +1,9 @@
 package shdv.demo.cas4.repository.cassandra;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.internal.mapper.DaoCacheKey;
 import com.datastax.oss.driver.internal.mapper.DefaultMapperContext;
 import java.lang.Override;
+import java.lang.String;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -22,8 +22,8 @@ public class ProductMapperImpl__MapperGenerated implements ProductMapper {
   }
 
   @Override
-  public ProductDao productDao(CqlIdentifier keyspace) {
-    DaoCacheKey key = new DaoCacheKey(keyspace, (CqlIdentifier)null, null, null);
+  public ProductDao productDao(String keyspace, String table) {
+    DaoCacheKey key = new DaoCacheKey(keyspace, table, null, null);
     return productDaoCache.computeIfAbsent(key, k -> ProductDaoImpl__MapperGenerated.init(context.withDaoParameters(k.getKeyspaceId(), k.getTableId(), k.getExecutionProfileName(), k.getExecutionProfile())));
   }
 }
