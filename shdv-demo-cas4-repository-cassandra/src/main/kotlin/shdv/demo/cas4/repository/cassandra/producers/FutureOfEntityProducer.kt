@@ -9,10 +9,17 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import java.lang.Exception
+import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
+import kotlin.reflect.KClass
 
-class FutureOfEntityProducer: MapperResultProducer {
-    override fun canProduce(resultType: GenericType<*>) =
-        resultType.rawType == ListenableFuture::class.java
+class FutureOfEntityProducer(
+    private vararg val entityClasses: Class<*>
+): MapperResultProducer {
+    override fun canProduce(resultType: GenericType<*>): Boolean {
+//        val entityTypes = entityClasses.toList()
+        return resultType.isTargetEntity(entityClasses)
+    }
 
     override fun execute(
         statement: Statement<*>,
@@ -36,6 +43,21 @@ class FutureOfEntityProducer: MapperResultProducer {
     }
 
     override fun wrapError(e: Exception): ListenableFuture<*> {
-       return Futures.immediateFailedFuture<ListenableFuture<*>>(e)
+       return Futures.immediateFailedFuture<Any>(e)
+    }
+
+    private fun GenericType<*>.isTargetEntity(entityClasses: Array<out Class<*>>): Boolean {
+        val typeName = this.type.typeName
+        val lfName = ListenableFuture::class.java.name
+        if (this.rawType != ListenableFuture::class.java)
+            return false
+        if (entityClasses.isNullOrEmpty())
+            return true
+        val types: MutableList<String> = mutableListOf()
+        entityClasses.forEach {
+            types.add(lfName + "<${it.name}>")
+        }
+        return types.contains(typeName)
     }
 }
+

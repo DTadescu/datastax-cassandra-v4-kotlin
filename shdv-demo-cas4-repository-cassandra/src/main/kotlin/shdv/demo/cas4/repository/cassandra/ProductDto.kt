@@ -21,8 +21,8 @@ data class ProductDto(
     val description: String? = null,
     @CqlName(COLUMN_CREATED)
     val created: LocalDate? = null,
-//    @CqlName(COLUMN_LAST_WATCHED)
-//    val lastWatch: String? = null,
+    @CqlName(COLUMN_LAST_WATCH)
+    val lastWatch: String? = null,
 ) {
     fun toModel() = ProductModel(
         id = id?: "",
@@ -30,7 +30,7 @@ data class ProductDto(
         price = price?: Double.MIN_VALUE,
         description = description?: "",
         created = created?: LocalDate.MIN,
-//        lastWatch = lastWatch?.let { Instant.parse(it) }?: Instant.MIN,
+        lastWatch = lastWatch?.let { Instant.parse(it) }?: Instant.MIN,
     )
     companion object {
         const val TABLE_NAME = "products"
@@ -39,7 +39,7 @@ data class ProductDto(
         const val COLUMN_PRICE = "price"
         const val COLUMN_DESCRIPTION = "description"
         const val COLUMN_CREATED = "created"
-        const val COLUMN_LAST_WATCHED = "last-watched"
+        const val COLUMN_LAST_WATCH = "last_watch"
 
         fun of(model: ProductModel) = ProductDto(
             id = model.id.takeIf { it.isNotBlank() },
@@ -47,7 +47,7 @@ data class ProductDto(
             price = model.price.takeIf { it != Double.MIN_VALUE },
             description = model.description.takeIf { it.isNotBlank() },
             created = model.created.takeIf { it != LocalDate.MIN },
-//            lastWatch = model.lastWatch.takeIf { it != Instant.MIN }?.toString(),
+            lastWatch = model.lastWatch.takeIf { it != Instant.MIN }?.toString(),
         )
     }
 }
@@ -60,10 +60,12 @@ interface ProductDao {
 //    fun getAsync(id: String): ProductDto
 
     @Select
-    fun list(): ListenableFuture<PagingIterable<ProductDto>>
+    fun list(): ListenableFuture<Collection<ProductDto>>
+//    fun list(): ListenableFuture<ProductDto>
 
-    @Insert
-    fun  saveAsync(product: ProductDto)
+    @Insert()
+    fun  saveAsync(product: ProductDto): ListenableFuture<Unit>
+//    fun  saveAsync(product: ProductDto): Boolean
 
 }
 

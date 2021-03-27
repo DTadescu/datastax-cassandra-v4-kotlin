@@ -1,5 +1,7 @@
 import com.datastax.oss.driver.api.core.CqlIdentifier
 import com.datastax.oss.driver.api.core.CqlSession
+import com.datastax.oss.driver.api.core.type.reflect.GenericType
+import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.runBlocking
 import shdv.demo.cas4.repository.cassandra.ProductMapperBuilder
 import kotlin.test.Test
@@ -7,11 +9,13 @@ import kotlinx.coroutines.guava.await
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.testcontainers.containers.GenericContainer
+import shdv.demo.cas4.repository.cassandra.ProductDto
 import shdv.demo.cas4.repository.cassandra.ProductModel
 import shdv.demo.cas4.repository.cassandra.ProductRepositoryCassandra
 import java.time.Duration
 import java.time.LocalDate
 import kotlin.test.BeforeTest
+import kotlin.test.Ignore
 
 class CassandraContainer : GenericContainer<CassandraContainer>("cassandra")
 
@@ -34,7 +38,7 @@ class CassandraTest {
                 }
 
             repo = ProductRepositoryCassandra(
-                keyspace = "keyspace1",
+                keyspace = keyspace,
                 hosts = container.host,
                 port = container.getMappedPort(PORT),
                 initObjects = listOf(
@@ -59,11 +63,29 @@ class CassandraTest {
 @Test
 fun testGetById() {
     runBlocking {
-        val data = repo.get("1")
+        val data = repo.get("3")
         println(data)
     }
 }
 
+//@Ignore
+@Test
+fun testGetAll() {
+    runBlocking {
+        val data = repo.list()
+        println(data)
+    }
+}
+
+@Ignore
+@Test
+fun testWriteAsync() {
+    runBlocking {
+
+    }
+}
+
+@Ignore
 @Test
 fun factoryTest() {
     runBlocking {
@@ -72,7 +94,7 @@ fun factoryTest() {
         val dao = productMapper.productDao("test-keyspace", "products")
         val product = dao.getAsync("test-id").await()
 //        val product = dao.getAsync("test-id")
-        val products = dao.list().await().toList()
+//        val products = dao.list().await().toList()
 //        val guava = ListenableFuture<String>
     }
 

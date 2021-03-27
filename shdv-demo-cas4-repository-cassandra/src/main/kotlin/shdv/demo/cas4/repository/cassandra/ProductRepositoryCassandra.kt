@@ -3,21 +3,25 @@ package shdv.demo.cas4.repository.cassandra
 import com.datastax.oss.driver.api.core.CqlIdentifier
 import com.datastax.oss.driver.api.core.CqlSession
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet
+import com.datastax.oss.driver.api.core.cql.ResultSet
+import com.datastax.oss.driver.api.core.cql.Row
 import com.datastax.oss.driver.api.core.type.DataType
 import com.datastax.oss.driver.api.core.type.DataTypes
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_CREATED
 import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_DESCRIPTION
 import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_ID
-import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_LAST_WATCHED
+import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_LAST_WATCH
 import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_NAME
 import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_PRICE
+import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.TABLE_NAME
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.time.Duration
-import java.util.concurrent.CompletionStage
 
 class ProductRepositoryCassandra(
     private val keyspace: String,
@@ -34,7 +38,7 @@ class ProductRepositoryCassandra(
 //        createKeyspace()
 //        createTable()
 //    }
-    private val tableName = "products"
+//    private val tableName = "products"
     private val session by lazy {
         val builder = CqlSession.builder()
             .addContactPoints(parseAddresses(hosts, port))
@@ -72,10 +76,12 @@ class ProductRepositoryCassandra(
     ProductMapperBuilder(session).build()
     }
     private val dao by lazy {
-        productMapper.productDao(keyspace, tableName).apply {
+        productMapper.productDao(keyspace, TABLE_NAME).apply {
             runBlocking {
                 initObjects.map {
-                    saveAsync(ProductDto.of(it))
+                    withTimeout(timeout.toMillis()) {
+                        saveAsync(ProductDto.of(it)).await()
+                    }
                 }
             }
         }
@@ -87,6 +93,7 @@ class ProductRepositoryCassandra(
 
     suspend fun list() =
         dao.list().await().map { it.toModel() }.toList()
+//        dao.list().await().toModel()
 
     private fun createKeyspace(session: CqlSession) {
 //        val initSession = CqlSession.builder()
@@ -110,14 +117,14 @@ class ProductRepositoryCassandra(
     }
 
     private fun createTable(session: CqlSession) {
-        val query = SchemaBuilder.createTable(tableName)
+        val query = SchemaBuilder.createTable(TABLE_NAME)
             .ifNotExists()
             .withPartitionKey(COLUMN_ID, DataTypes.TEXT)
             .withColumn(COLUMN_NAME, DataTypes.TEXT)
             .withColumn(COLUMN_PRICE, DataTypes.DOUBLE)
             .withColumn(COLUMN_DESCRIPTION, DataTypes.TEXT)
             .withColumn(COLUMN_CREATED, DataTypes.DATE)
-//                .withColumn(COLUMN_LAST_WATCHED, DataTypes.TEXT)
+            .withColumn(COLUMN_LAST_WATCH, DataTypes.TEXT)
             .build()
         println(query.query)
 
@@ -141,6 +148,6 @@ class ProductRepositoryCassandra(
         .apply { println(this) }
 
     fun init() = apply {
-        val mapper = productMapper
+        val dao = dao
     }
 }
