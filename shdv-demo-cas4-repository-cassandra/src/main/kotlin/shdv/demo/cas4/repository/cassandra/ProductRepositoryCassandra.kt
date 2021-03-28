@@ -1,30 +1,29 @@
 package shdv.demo.cas4.repository.cassandra
 
-import com.datastax.oss.driver.api.core.CqlIdentifier
 import com.datastax.oss.driver.api.core.CqlSession
-import com.datastax.oss.driver.api.core.cql.AsyncResultSet
-import com.datastax.oss.driver.api.core.cql.ResultSet
-import com.datastax.oss.driver.api.core.cql.Row
-import com.datastax.oss.driver.api.core.type.DataType
 import com.datastax.oss.driver.api.core.type.DataTypes
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
+import com.datastax.oss.driver.internal.core.type.UserDefinedTypeBuilder
+import com.datastax.oss.driver.internal.core.type.codec.UdtCodec
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import shdv.demo.cas4.repository.cassandra.ProducerDto.Companion.COLUMN_SITE
+import shdv.demo.cas4.repository.cassandra.ProducerDto.Companion.TYPE_NAME
 import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_CREATED
 import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_DESCRIPTION
 import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_ID
 import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_LAST_WATCH
 import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_NAME
 import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_PRICE
+import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.COLUMN_PRODUCER
 import shdv.demo.cas4.repository.cassandra.ProductDto.Companion.TABLE_NAME
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.time.Duration
 
 class ProductRepositoryCassandra(
-    private val keyspace: String,
+    private val keyspaceName: String,
     private val hosts: String = "",
     private val port: Int = 9042,
     private val user: String = "cassandra",
@@ -45,10 +44,11 @@ class ProductRepositoryCassandra(
             .withLocalDatacenter("datacenter1")
             .withAuthCredentials(user, pass)
         builder.build().apply {
-            createKeyspace(this)
+            createKeyspace()
         }
-        builder.withKeyspace(keyspace).build().apply {
-            createTable(this)
+        builder.withKeyspace(keyspaceName).build().apply {
+            createTypeProducer()
+            createTable()
         }
 //        CqlSession.builder().also {
 //            println(it)
@@ -76,7 +76,7 @@ class ProductRepositoryCassandra(
     ProductMapperBuilder(session).build()
     }
     private val dao by lazy {
-        productMapper.productDao(keyspace, TABLE_NAME).apply {
+        productMapper.productDao(keyspaceName, TABLE_NAME).apply {
             runBlocking {
                 initObjects.map {
                     withTimeout(timeout.toMillis()) {
@@ -95,14 +95,14 @@ class ProductRepositoryCassandra(
         dao.list().await().map { it.toModel() }.toList()
 //        dao.list().await().toModel()
 
-    private fun createKeyspace(session: CqlSession) {
+    private fun CqlSession.createKeyspace() {
 //        val initSession = CqlSession.builder()
 //            .addContactPoints(parseAddresses(hosts, port))
 //            .withLocalDatacenter("datacenter1")
 //            .withAuthCredentials(user, pass)
 //            .build()
-        session.execute(
-            SchemaBuilder.createKeyspace(keyspace)
+        execute(
+            SchemaBuilder.createKeyspace(keyspaceName)
                 .ifNotExists()
                 .withSimpleStrategy(replicationFactor)
                 .build()
@@ -116,11 +116,21 @@ class ProductRepositoryCassandra(
 //        println(initSession.keyspace)
     }
 
-    private fun createTable(session: CqlSession) {
+    private fun CqlSession.createTypeProducer() {
+        execute(SchemaBuilder.createType(TYPE_NAME)
+            .ifNotExists()
+            .withField(ProducerDto.COLUMN_NAME, DataTypes.TEXT)
+            .withField(COLUMN_SITE, DataTypes.TEXT)
+            .build()
+        )
+    }
+
+    private fun CqlSession.createTable() {
         val query = SchemaBuilder.createTable(TABLE_NAME)
             .ifNotExists()
             .withPartitionKey(COLUMN_ID, DataTypes.TEXT)
             .withColumn(COLUMN_NAME, DataTypes.TEXT)
+            .withColumn(COLUMN_PRODUCER, SchemaBuilder.udt(TYPE_NAME, true))
             .withColumn(COLUMN_PRICE, DataTypes.DOUBLE)
             .withColumn(COLUMN_DESCRIPTION, DataTypes.TEXT)
             .withColumn(COLUMN_CREATED, DataTypes.DATE)
@@ -135,7 +145,7 @@ class ProductRepositoryCassandra(
 //            .withAuthCredentials(user, pass)
 //            .build()
 
-        session.execute(
+        execute(
             query
         )
     }

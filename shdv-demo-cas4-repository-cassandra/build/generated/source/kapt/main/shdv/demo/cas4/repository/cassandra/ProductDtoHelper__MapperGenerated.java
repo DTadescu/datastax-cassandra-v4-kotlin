@@ -3,6 +3,7 @@ package shdv.demo.cas4.repository.cassandra;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.data.GettableByName;
 import com.datastax.oss.driver.api.core.data.SettableByName;
+import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 import com.datastax.oss.driver.api.core.type.DataType;
@@ -43,13 +44,17 @@ import org.slf4j.LoggerFactory;
 public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductDto> {
   private static final Logger LOG = LoggerFactory.getLogger(ProductDtoHelper__MapperGenerated.class);
 
-  private static final GenericType<Double> GENERIC_TYPE = new GenericType<Double>(){};
+  private static final GenericType<UdtValue> GENERIC_TYPE = new GenericType<UdtValue>(){};
 
-  private static final GenericType<String> GENERIC_TYPE1 = new GenericType<String>(){};
+  private static final GenericType<Double> GENERIC_TYPE1 = new GenericType<Double>(){};
 
-  private static final GenericType<LocalDate> GENERIC_TYPE2 = new GenericType<LocalDate>(){};
+  private static final GenericType<String> GENERIC_TYPE2 = new GenericType<String>(){};
+
+  private static final GenericType<LocalDate> GENERIC_TYPE3 = new GenericType<LocalDate>(){};
 
   private final List<String> primaryKeys;
+
+  private final ProducerDtoHelper__MapperGenerated producerDtoHelper;
 
   public ProductDtoHelper__MapperGenerated(MapperContext context) {
     super(context, "product_dto");
@@ -60,6 +65,7 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
     this.primaryKeys = ImmutableList.<String>builder()
         .add("id")
         .build();
+    this.producerDtoHelper = new ProducerDtoHelper__MapperGenerated(context);
   }
 
   @Override
@@ -77,6 +83,16 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
 
     if (entity.getName() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
       target = target.set("name", entity.getName(), String.class);
+    }
+
+    ProducerDto value = entity.getProducer();
+    if (value != null) {
+      UserDefinedType udtType = (UserDefinedType) target.getType("producer");
+      UdtValue udtValue = udtType.newValue();
+      producerDtoHelper.set(value, udtValue,  NullSavingStrategy.DO_NOT_SET);
+      target = target.setUdtValue("producer", udtValue);
+    } else if (nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.setUdtValue("producer", null);
     }
 
     if (entity.getPrice() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
@@ -105,20 +121,29 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
 
     String propertyValue1 = source.get("name", String.class);
 
-    Double propertyValue2 = source.get("price", Double.class);
+    ProducerDto propertyValue2;
+    UdtValue udtValue1 = source.getUdtValue("producer");
+    if (udtValue1 == null) {
+      propertyValue2 = null;
+    } else {
+      propertyValue2 = producerDtoHelper.get(udtValue1);
+    }
 
-    String propertyValue3 = source.get("description", String.class);
+    Double propertyValue3 = source.get("price", Double.class);
 
-    LocalDate propertyValue4 = source.get("created", LocalDate.class);
+    String propertyValue4 = source.get("description", String.class);
 
-    String propertyValue5 = source.get("last_watch", String.class);
+    LocalDate propertyValue5 = source.get("created", LocalDate.class);
+
+    String propertyValue6 = source.get("last_watch", String.class);
     return new ProductDto(
         propertyValue,
         propertyValue1,
         propertyValue2,
         propertyValue3,
         propertyValue4,
-        propertyValue5);
+        propertyValue5,
+        propertyValue6);
   }
 
   @Override
@@ -130,6 +155,7 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
     return insertInto
         .value("id", QueryBuilder.bindMarker("id"))
         .value("name", QueryBuilder.bindMarker("name"))
+        .value("producer", QueryBuilder.bindMarker("producer"))
         .value("price", QueryBuilder.bindMarker("price"))
         .value("description", QueryBuilder.bindMarker("description"))
         .value("created", QueryBuilder.bindMarker("created"))
@@ -159,6 +185,7 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
     return selectFrom
         .column("id")
         .column("name")
+        .column("producer")
         .column("price")
         .column("description")
         .column("created")
@@ -199,6 +226,7 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
         : QueryBuilder.update(keyspaceId, tableId);
     return ((DefaultUpdate)update
         .setColumn("name", QueryBuilder.bindMarker("name"))
+        .setColumn("producer", QueryBuilder.bindMarker("producer"))
         .setColumn("price", QueryBuilder.bindMarker("price"))
         .setColumn("description", QueryBuilder.bindMarker("description"))
         .setColumn("created", QueryBuilder.bindMarker("created"))
@@ -234,6 +262,7 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
     List<CqlIdentifier> expectedCqlNames = new ArrayList<>();
     expectedCqlNames.add(CqlIdentifier.fromCql("id"));
     expectedCqlNames.add(CqlIdentifier.fromCql("name"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("producer"));
     expectedCqlNames.add(CqlIdentifier.fromCql("price"));
     expectedCqlNames.add(CqlIdentifier.fromCql("description"));
     expectedCqlNames.add(CqlIdentifier.fromCql("created"));
@@ -255,12 +284,13 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
       }
       // validation of types
       Map<CqlIdentifier, GenericType<?>> expectedTypesPerColumn = new LinkedHashMap<>();
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("price"), GENERIC_TYPE);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("last_watch"), GENERIC_TYPE1);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("id"), GENERIC_TYPE1);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("created"), GENERIC_TYPE2);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("name"), GENERIC_TYPE1);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("description"), GENERIC_TYPE1);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("producer"), GENERIC_TYPE);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("price"), GENERIC_TYPE1);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("last_watch"), GENERIC_TYPE2);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("id"), GENERIC_TYPE2);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("created"), GENERIC_TYPE3);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("name"), GENERIC_TYPE2);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("description"), GENERIC_TYPE2);
       List<String> missingTableTypes = findTypeMismatches(expectedTypesPerColumn, tableMetadata.get().getColumns(), context.getSession().getContext().getCodecRegistry());
       throwMissingTableTypesIfNotEmpty(missingTableTypes, keyspaceId, tableId, entityClassName);
     }
@@ -273,12 +303,13 @@ public class ProductDtoHelper__MapperGenerated extends EntityHelperBase<ProductD
       }
       // validation of UDT types
       Map<CqlIdentifier, GenericType<?>> expectedTypesPerColumn = new LinkedHashMap<>();
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("price"), GENERIC_TYPE);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("last_watch"), GENERIC_TYPE1);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("id"), GENERIC_TYPE1);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("created"), GENERIC_TYPE2);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("name"), GENERIC_TYPE1);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("description"), GENERIC_TYPE1);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("producer"), GENERIC_TYPE);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("price"), GENERIC_TYPE1);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("last_watch"), GENERIC_TYPE2);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("id"), GENERIC_TYPE2);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("created"), GENERIC_TYPE3);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("name"), GENERIC_TYPE2);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("description"), GENERIC_TYPE2);
       List<CqlIdentifier> expectedColumns = userDefinedType.get().getFieldNames();
       List<DataType> expectedTypes = userDefinedType.get().getFieldTypes();
       List<String> missingTableTypes = findTypeMismatches(expectedTypesPerColumn, expectedColumns, expectedTypes, context.getSession().getContext().getCodecRegistry());

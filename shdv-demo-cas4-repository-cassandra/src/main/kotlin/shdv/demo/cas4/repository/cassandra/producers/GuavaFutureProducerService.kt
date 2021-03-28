@@ -6,10 +6,11 @@ import shdv.demo.cas4.repository.cassandra.ProductDto
 import java.util.*
 
 class GuavaFutureProducerService: MapperResultProducerService {
-    override fun getProducers(): MutableIterable<MapperResultProducer> =
-        Arrays.asList(
-            FutureOfEntityProducer(ProductDto::class.java),
-            FutureOfUnitProducer(),
+    override fun getProducers(): Iterable<MapperResultProducer> =
+        listOf(
             FutureOfCollectionProducer(),
+            FutureOfUnitProducer(),
+//            FutureOfEntityProducer(ProductDto::class.java),
+            FutureOfEntityProducer(),
         )
 }

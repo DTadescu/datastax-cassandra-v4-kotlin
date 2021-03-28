@@ -38,7 +38,7 @@ class CassandraTest {
                 }
 
             repo = ProductRepositoryCassandra(
-                keyspace = keyspace,
+                keyspaceName = keyspace,
                 hosts = container.host,
                 port = container.getMappedPort(PORT),
                 initObjects = listOf(

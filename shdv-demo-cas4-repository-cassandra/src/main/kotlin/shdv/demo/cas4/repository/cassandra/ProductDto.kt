@@ -1,12 +1,33 @@
 package shdv.demo.cas4.repository.cassandra
 
-import com.datastax.oss.driver.api.core.CqlIdentifier
-import com.datastax.oss.driver.api.core.PagingIterable
-import com.datastax.oss.driver.api.core.cql.ResultSet
 import com.datastax.oss.driver.api.mapper.annotations.*
 import com.google.common.util.concurrent.ListenableFuture
 import java.time.Instant
 import java.time.LocalDate
+
+@Entity
+data class ProducerDto(
+    @CqlName(COLUMN_NAME)
+    val name: String? = null,
+    @CqlName(COLUMN_SITE)
+    val site: String? = null,
+) {
+    companion object {
+        const val TYPE_NAME = "producer"
+        const val COLUMN_NAME = "name"
+        const val COLUMN_SITE = "site"
+
+        fun of(model: ProducerModel) = ProducerDto(
+            name = model.name.takeIf { it.isNotBlank() },
+            site = model.site.takeIf { it.isNotBlank() },
+        )
+    }
+
+    fun toModel() = ProducerModel(
+        name = name?: "",
+        site = site?: "",
+    )
+}
 
 @Entity
 data class ProductDto(
@@ -15,6 +36,8 @@ data class ProductDto(
     val id: String? = null,
     @CqlName(COLUMN_NAME)
     val name: String? = null,
+    @CqlName(COLUMN_PRODUCER)
+    val producer: ProducerDto? = null,
     @CqlName(COLUMN_PRICE)
     val price: Double? = null,
     @CqlName(COLUMN_DESCRIPTION)
@@ -27,6 +50,7 @@ data class ProductDto(
     fun toModel() = ProductModel(
         id = id?: "",
         name = name?: "",
+        producer = producer?.toModel()?: ProducerModel.NONE,
         price = price?: Double.MIN_VALUE,
         description = description?: "",
         created = created?: LocalDate.MIN,
@@ -36,6 +60,7 @@ data class ProductDto(
         const val TABLE_NAME = "products"
         const val COLUMN_ID = "id"
         const val COLUMN_NAME = "name"
+        const val COLUMN_PRODUCER = "producer"
         const val COLUMN_PRICE = "price"
         const val COLUMN_DESCRIPTION = "description"
         const val COLUMN_CREATED = "created"
@@ -44,6 +69,7 @@ data class ProductDto(
         fun of(model: ProductModel) = ProductDto(
             id = model.id.takeIf { it.isNotBlank() },
             name = model.name.takeIf { it.isNotBlank() },
+            producer = model.producer.takeIf { it != ProducerModel.NONE }?.let { ProducerDto.of(it) },
             price = model.price.takeIf { it != Double.MIN_VALUE },
             description = model.description.takeIf { it.isNotBlank() },
             created = model.created.takeIf { it != LocalDate.MIN },
