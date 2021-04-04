@@ -1,5 +1,6 @@
 package shdv.demo.cas4.repository.cassandra
 
+import com.datastax.oss.driver.api.core.ConsistencyLevel
 import com.datastax.oss.driver.api.mapper.annotations.*
 import com.google.common.util.concurrent.ListenableFuture
 import java.time.Instant
@@ -86,10 +87,12 @@ interface ProductDao {
 //    fun getAsync(id: String): ProductDto
 
     @Select
+    @StatementAttributes(consistencyLevel = "QUORUM")
     fun list(): ListenableFuture<Collection<ProductDto>>
 //    fun list(): ListenableFuture<ProductDto>
 
-    @Insert()
+    @Insert
+    @StatementAttributes(consistencyLevel = "ONE")
     fun  saveAsync(product: ProductDto): ListenableFuture<Unit>
 //    fun  saveAsync(product: ProductDto): Boolean
 

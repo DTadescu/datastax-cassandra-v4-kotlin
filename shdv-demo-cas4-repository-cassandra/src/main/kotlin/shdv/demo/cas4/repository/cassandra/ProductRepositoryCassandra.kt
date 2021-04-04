@@ -1,10 +1,15 @@
 package shdv.demo.cas4.repository.cassandra
 
+import com.datastax.oss.driver.api.core.ConsistencyLevel
 import com.datastax.oss.driver.api.core.CqlSession
+import com.datastax.oss.driver.api.core.config.DefaultDriverOption
+import com.datastax.oss.driver.api.core.config.DriverConfigLoader
 import com.datastax.oss.driver.api.core.type.DataTypes
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
 import com.datastax.oss.driver.internal.core.type.UserDefinedTypeBuilder
 import com.datastax.oss.driver.internal.core.type.codec.UdtCodec
+import com.datastax.oss.protocol.internal.request.query.QueryOptions
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -38,6 +43,13 @@ class ProductRepositoryCassandra(
 //        createTable()
 //    }
 //    private val tableName = "products"
+    private val config by lazy {
+    DriverConfigLoader.programmaticBuilder()
+        .startProfile("default")
+        .withString(DefaultDriverOption.REQUEST_CONSISTENCY, ConsistencyLevel.ALL.name())
+        .build()
+    }
+
     private val session by lazy {
         val builder = CqlSession.builder()
             .addContactPoints(parseAddresses(hosts, port))
@@ -46,7 +58,8 @@ class ProductRepositoryCassandra(
         builder.build().apply {
             createKeyspace()
         }
-        builder.withKeyspace(keyspaceName).build().apply {
+        builder.withKeyspace(keyspaceName)
+            .withConfigLoader(config).build().apply {
             createTypeProducer()
             createTable()
         }
