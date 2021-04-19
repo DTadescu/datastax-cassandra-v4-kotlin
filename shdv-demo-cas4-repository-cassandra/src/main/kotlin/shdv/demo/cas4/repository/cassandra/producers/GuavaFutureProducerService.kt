@@ -10,6 +10,7 @@ class GuavaFutureProducerService: MapperResultProducerService {
         listOf(
             FutureOfCollectionProducer(),
             FutureOfUnitProducer(),
+            FutureOfBooleanProducer(),
 //            FutureOfEntityProducer(ProductDto::class.java),
             FutureOfEntityProducer(),
         )

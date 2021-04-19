@@ -1,6 +1,5 @@
 package shdv.demo.cas4.repository.cassandra
 
-import com.datastax.oss.driver.api.mapper.annotations.CqlName
 import java.time.Instant
 import java.time.LocalDate
 
@@ -21,8 +20,27 @@ data class ProductModel(
 data class ProducerModel(
     val name: String = "",
     val site: String = "",
+    val location: LocationModel = LocationModel.NONE
 ) {
     companion object {
         val NONE = ProducerModel()
+    }
+}
+
+data class LocationModel(
+    val city: String = "",
+    val address: AddressModel = AddressModel.NONE
+) {
+    companion object {
+        val NONE = LocationModel()
+    }
+}
+
+data class AddressModel(
+    val street: String = "",
+    val house: String = ""
+) {
+    companion object {
+        val NONE = AddressModel()
     }
 }

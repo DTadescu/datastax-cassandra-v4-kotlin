@@ -3,15 +3,12 @@ import com.datastax.oss.driver.api.core.CqlSession
 import com.datastax.oss.driver.api.core.type.reflect.GenericType
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.runBlocking
-import shdv.demo.cas4.repository.cassandra.ProductMapperBuilder
 import kotlin.test.Test
 import kotlinx.coroutines.guava.await
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.testcontainers.containers.GenericContainer
-import shdv.demo.cas4.repository.cassandra.ProductDto
-import shdv.demo.cas4.repository.cassandra.ProductModel
-import shdv.demo.cas4.repository.cassandra.ProductRepositoryCassandra
+import shdv.demo.cas4.repository.cassandra.*
 import java.time.Duration
 import java.time.LocalDate
 import kotlin.test.BeforeTest
@@ -26,6 +23,9 @@ class CassandraTest {
         private val keyspace = "test_keyspace"
         private lateinit var container: CassandraContainer
         private lateinit var repo: ProductRepositoryCassandra
+        private val address = AddressModel(street = "Ershova", house = "22")
+        private val location = LocationModel(city = "Kazan", address = address)
+        private val producer = ProducerModel(name = "Gov", location = location)
 
         @BeforeClass
         @JvmStatic
@@ -43,7 +43,7 @@ class CassandraTest {
                 port = container.getMappedPort(PORT),
                 initObjects = listOf(
                     ProductModel(id = "0"),
-                    ProductModel(id = "1", name = "product-1"),
+                    ProductModel(id = "1", name = "product-1", producer = producer),
                     ProductModel(id = "2", name = "product-1"),
                     ProductModel(id = "3", created = LocalDate.parse("2021-02-03")),
                     ProductModel(id = "4", created = LocalDate.parse("2021-02-03")),
@@ -63,7 +63,15 @@ class CassandraTest {
 @Test
 fun testGetById() {
     runBlocking {
-        val data = repo.get("3")
+        val data = repo.get("1")
+        println(data)
+    }
+}
+
+@Test
+fun testDelete() {
+    runBlocking {
+        val data = repo.delete("3")
         println(data)
     }
 }
@@ -77,11 +85,18 @@ fun testGetAll() {
     }
 }
 
-@Ignore
 @Test
 fun testWriteAsync() {
     runBlocking {
-
+        val model = ProductModel(
+            id = "10",
+            name = "product",
+            producer = ProducerModel("IBM", "ibm.org")
+        )
+        val data = repo.save(model)
+        println(data)
+        val response = repo.get("10")
+        println(response)
     }
 }
 

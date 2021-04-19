@@ -25,6 +25,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+
     implementation("com.datastax.oss:java-driver-core:$cassandraDriverVersion")
     implementation("com.datastax.oss:java-driver-query-builder:$cassandraDriverVersion")
     kapt("com.datastax.oss:java-driver-mapper-processor:$cassandraDriverVersion")
